@@ -143,7 +143,9 @@ def download_ytdlp(url, dest_dir, quality="best", platform=""):
     fmt = {"best": "bestvideo+bestaudio/best",
            "1080": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
            "720": "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
-           "480": "bestvideo[height<=480]+bestaudio/best[height<=480]/best"}.get(q, "bestvideo+bestaudio/best")
+           # Facebook's progressive formats report unknown height, so height
+           # filters alone match nothing there; /sd is Facebook's low format.
+           "480": "bestvideo[height<=480]+bestaudio/best[height<=480]/sd/best"}.get(q, "bestvideo+bestaudio/best")
     opts = ydl_opts({"format": fmt, "format_sort": ["res", "fps", "br"], "merge_output_format": "mp4",
                      "outtmpl": os.path.join(dest_dir, "%(title).80s [%(id)s].%(ext)s")})
     with yt_dlp.YoutubeDL(opts) as ydl:
