@@ -30,10 +30,10 @@ def tikwm(url):
         raise Exception(j.get("msg") or "tikwm failed")
     return j["data"]
 
-def check_tiktok(url):
+def check_tiktok(url, cap=50):
     # Profile/@username link (no /video/) -> attempt flat yt-dlp extraction
     if "/video/" not in url and ("/@" in url or "tiktok.com/@" in url):
-        with yt_dlp.YoutubeDL(ydl_opts({"extract_flat": True, "playlistend": 50})) as ydl:
+        with yt_dlp.YoutubeDL(ydl_opts({"extract_flat": True, "playlistend": cap})) as ydl:
             info = ydl.extract_info(url, download=False)
         entries = info.get("entries") or []
         if not entries:
@@ -46,12 +46,12 @@ def check_tiktok(url):
              "thumbnail": d.get("cover") or "", "duration": d.get("duration"),
              "id": str(d.get("id") or "")}]
 
-def check_ytdlp(url):
-    with yt_dlp.YoutubeDL(ydl_opts({"extract_flat": "in_playlist"})) as ydl:
+def check_ytdlp(url, cap=200):
+    with yt_dlp.YoutubeDL(ydl_opts({"extract_flat": "in_playlist", "playlistend": cap})) as ydl:
         info = ydl.extract_info(url, download=False)
     if info.get("_type") == "playlist" or "entries" in info and info.get("entries"):
         out = []
-        for e in (info.get("entries") or [])[:200]:
+        for e in (info.get("entries") or [])[:cap]:
             if not e: continue
             u = e.get("url") or e.get("webpage_url") or ""
             if u and not u.startswith("http"): u = f"https://www.youtube.com/watch?v={e.get('id')}"
@@ -73,6 +73,34 @@ def index():
 
 @app.get("/api/health")
 def health(): return jsonify(ok=True)
+
+@app.post("/api/fetch")
+def fetch_links():
+    """Step 1: expand ONE channel / page / profile / playlist link into all
+    its video links, so the user can copy them or continue to downloading."""
+    body = request.get_json(force=True, silent=True) or {}
+    platform = (body.get("platform") or "").lower()
+    url = (body.get("url") or "").strip()
+    if not url:
+        return jsonify(ok=False, error="No link given"), 400
+    cap = 500
+    try:
+        items = check_tiktok(url, cap) if platform == "tiktok" else check_ytdlp(url, cap)
+    except Exception as e:
+        msg = str(e)
+        if "Sign in to confirm" in msg or "not a bot" in msg:
+            msg = "YouTube blocked this server: 'Sign in to confirm you're not a bot' (datacenter IP). Add a cookies.txt on the backend (COOKIES_FILE) or try again later."
+        elif platform == "facebook" and "Unsupported URL" in msg:
+            msg = "Facebook does not give out a page's full video list without login, so links can't be fetched from a page link. Open the page's Videos tab, copy the video links, and paste them directly in Step 2 (Download) — downloading itself works at full quality."
+        return jsonify(ok=False, platform=platform, error=msg[:500])
+    links = [{"url": it["url"], "title": it.get("title") or "", "duration": it.get("duration"),
+              "thumbnail": it.get("thumbnail") or ""} for it in items if it.get("ok") and it.get("url")]
+    note = ""
+    if len(links) >= cap:
+        note = f"Showing the first {cap} videos (fetch limit)."
+    elif platform == "tiktok" and "/video/" not in url:
+        note = "TikTok profile fetch returns the most recent videos TikTok exposes without login."
+    return jsonify(ok=True, platform=platform, count=len(links), links=links, note=note)
 
 @app.post("/api/check")
 def check():

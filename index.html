@@ -20,12 +20,32 @@ select{padding:9px;border-radius:8px;background:#0f1115;color:#fff;border:1px so
 .spin{display:none;color:#f0b429;font-weight:600}.spin.on{display:block}
 .settings{margin-top:28px;font-size:13px;color:#9aa3af}.settings input{width:100%;padding:8px;border-radius:8px;border:1px solid #333a47;background:#0f1115;color:#fff;margin-top:6px}
 label.chk{font-size:14px}
+.card.fetch{grid-column:1/-1;background:#333d52;padding:20px 8px 16px}
+input.txt{width:100%;padding:11px;border-radius:10px;border:1px solid #333a47;background:#0f1115;color:#fff;font-size:14px}
+.flink{font-size:12px;color:#8ab4ff;word-break:break-all}
+.fitem{background:#0f1115;border:1px solid #262b36;border-radius:10px;padding:8px 10px;margin:6px 0;font-size:13px}
 </style></head><body><div class="wrap">
 <h1>📥 Bulk Video Downloader</h1><p class="sub">Pick a platform, paste links, download all in one ZIP. Free.</p>
 <div class="grid" id="home">
 <button class="card yt" onclick="openP('youtube')"><div class="ic">▶️</div><div class="nm">YouTube</div><div class="ds">Videos · Shorts · Playlists</div></button>
 <button class="card tt" onclick="openP('tiktok')"><div class="ic">♪</div><div class="nm">TikTok</div><div class="ds">No watermark</div></button>
 <button class="card fb" onclick="openP('facebook')"><div class="ic">f</div><div class="nm">Facebook</div><div class="ds">Videos · Reels</div></button>
+<button class="card fetch" onclick="openFetch()"><div class="ic">🔗</div><div class="nm">Step 1 · Fetch All Links</div><div class="ds">Paste a channel / page / profile link — get every video link, then continue to download</div></button>
+</div>
+
+<div class="panel" id="fetchPanel">
+<button class="back" onclick="goHome()">← All platforms</button>
+<h2 style="margin:0 0 10px">Step 1 — Fetch all video links</h2>
+<div class="row"><label>Platform:</label>
+<select id="fPlatform"><option value="youtube">YouTube channel / playlist</option><option value="tiktok">TikTok profile</option><option value="facebook">Facebook page</option></select></div>
+<input class="txt" id="fUrl" placeholder="Paste the channel / page / profile link here">
+<div class="row"><button class="btn" id="fetchBtn" onclick="doFetch()">🔗 Fetch Links</button>
+<span class="spin" id="fSpin">Fetching… this can take a moment for big channels</span></div>
+<div id="fNote" style="font-size:13px;color:#9aa3af"></div>
+<div id="fList"></div>
+<div class="row" id="fActions" style="display:none">
+<button class="btn" onclick="copyFetched()">📋 Copy All Links</button>
+<button class="btn green" onclick="continueToDownload()">Continue to Download →</button></div>
 </div>
 
 <div class="panel" id="panel">
@@ -57,12 +77,38 @@ const apiBaseEl=document.getElementById('apiBase');apiBaseEl.value=localStorage.
 apiBaseEl.onchange=()=>localStorage.setItem('apiBase',apiBaseEl.value.trim());
 const NAMES={youtube:'YouTube',tiktok:'TikTok',facebook:'Facebook'};
 function openP(p){platform=p;document.getElementById('home').style.display='none';
- document.getElementById('panel').classList.add('open');document.getElementById('pTitle').textContent=NAMES[p];
+ document.getElementById('fetchPanel').classList.remove('open');
+ document.getElementById('panel').classList.add('open');document.getElementById('pTitle').textContent=NAMES[p]+' — Step 2 · Download';
  document.getElementById('qOpts').style.display=(p==='youtube'||p==='facebook')?'flex':'none';
  document.getElementById('ttOpts').style.display=p==='tiktok'?'flex':'none';
  document.getElementById('urls').placeholder=p==='tiktok'?'Paste TikTok video links (or one @profile link), one per line':'Paste links, one per line';
  results=[];render();}
-function goHome(){document.getElementById('home').style.display='grid';document.getElementById('panel').classList.remove('open')}
+function goHome(){document.getElementById('home').style.display='grid';document.getElementById('panel').classList.remove('open');document.getElementById('fetchPanel').classList.remove('open')}
+let fetched=[];
+function openFetch(){document.getElementById('home').style.display='none';document.getElementById('panel').classList.remove('open');document.getElementById('fetchPanel').classList.add('open')}
+async function doFetch(){const url=document.getElementById('fUrl').value.trim();
+ if(!url)return alert('Paste a channel / page / profile link first');
+ const fp=document.getElementById('fPlatform').value;
+ const sp=document.getElementById('fSpin');sp.classList.add('on');document.getElementById('fetchBtn').disabled=true;
+ document.getElementById('fNote').textContent='';document.getElementById('fList').innerHTML='';document.getElementById('fActions').style.display='none';fetched=[];
+ try{const r=await fetch(base()+'/api/fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform:fp,url})});
+  const j=await r.json();
+  if(!j.ok)throw new Error(j.error||'Fetch failed');
+  fetched=j.links||[];
+  if(!fetched.length)throw new Error('No video links found at that address. Check the link, or paste the video links directly in the download section.');
+  document.getElementById('fNote').textContent='Found '+fetched.length+' video link(s). '+(j.note||'');
+  document.getElementById('fList').innerHTML=fetched.map((f,i)=>`<div class="fitem"><b>${i+1}.</b> ${(f.title||'Video').replace(/</g,'&lt;')}<br><span class="flink">${f.url}</span></div>`).join('');
+  document.getElementById('fActions').style.display='flex';}
+ catch(e){alert('Fetch failed: '+e.message)}
+ finally{sp.classList.remove('on');document.getElementById('fetchBtn').disabled=false}}
+async function copyFetched(){if(!fetched.length)return;
+ const txt=fetched.map(f=>f.url).join('\n');
+ try{await navigator.clipboard.writeText(txt);alert('Copied '+fetched.length+' links. You can paste them anywhere — or just press Continue.')}
+ catch(_){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('Copied '+fetched.length+' links.')}}
+function continueToDownload(){if(!fetched.length)return;
+ const fp=document.getElementById('fPlatform').value;
+ openP(fp);document.getElementById('urls').value=fetched.map(f=>f.url).join('\n');
+ window.scrollTo({top:0,behavior:'smooth'})}
 function fmt(s){if(!s&&s!==0)return'';s=Math.round(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 function render(){const el=document.getElementById('list');el.innerHTML=results.map((r,i)=>
  `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="">`:'<img alt="">'}
