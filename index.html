@@ -79,29 +79,41 @@ function render(){const el=document.getElementById('list');el.innerHTML=results.
  if(r.duration)badges.push('<span class="bd">⏱ '+fmt(r.duration)+'</span>');
  if(r.ok&&r.heights&&r.heights.length)badges.push('<span class="bd q">'+Math.max(...r.heights)+'p available</span>');
  if(r.ok)badges.push('<span class="bd ok">✓ Ready</span>');else badges.push('<span class="bd bad">Failed</span>');
- return `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="">`:'<img alt="">'}
+ return `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="" loading="lazy">`:'<img alt="">'}
   <div class="t"><b>${(r.title||'Untitled').replace(/</g,'&lt;')}</b><div class="badges">${badges.join('')}</div>${r.ok?'':'<span class="err">'+(r.error||'Failed').replace(/</g,'&lt;')+'</span>'}</div>
   ${r.ok?`<input type="checkbox" class="pick" data-i="${i}" checked>`:''}</div>`}).join('');
  document.getElementById('dlRow').style.display=results.some(r=>r.ok)?'flex':'none';}
 function toggleAll(v){document.querySelectorAll('.pick').forEach(c=>c.checked=v)}
-let lastCheckedKey='';
+let lastCheckedKey='',checking=false,pendingRecheck=false;
+async function fetchJSON(url,body,timeoutMs){
+ const ctl=new AbortController();const t=setTimeout(()=>ctl.abort(),timeoutMs);
+ try{const r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),signal:ctl.signal});return await r.json();}
+ finally{clearTimeout(t)}}
+// Check ONE pasted link per request. The old way sent the whole list in a
+// single request that could hang for minutes on a phone connection (the
+// user's speed dropped to zero and everything stalled). One link = a few
+// seconds, results appear one by one, and a bad link never blocks the rest.
+async function checkOneItems(u){
+ for(let attempt=0;attempt<2;attempt++){
+  try{const j=await fetchJSON(base()+'/api/check',{platform,urls:[u]},60000);
+   if(j&&j.results&&j.results.length)return j.results;}
+  catch(e){if(attempt===0)await new Promise(r=>setTimeout(r,1500));}}
+ if(platform==='tiktok'){const t=await checkTikwm([u]);if(t.length)return t;}
+ return [{url:u,ok:false,title:'',thumbnail:'',duration:null,id:'',error:'Could not check this link — server or connection problem. The other links are unaffected.'}];}
 async function doCheck(auto){const urls=document.getElementById('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
  if(!urls.length){if(!auto)alert('Paste at least one link');return}
- lastCheckedKey=platform+'|'+urls.join('|');
- const sp=document.getElementById('spin');sp.textContent='Checking links…';sp.classList.add('on');document.getElementById('checkBtn').disabled=true;
- try{let j=null,lastErr=null;
-  // Weak connections and a sleepy free server can drop the first attempt —
-  // retry quietly up to 3 times before bothering the user with an error.
-  for(let attempt=0;attempt<3&&!j;attempt++){
-   try{const r=await fetch(base()+'/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform,urls})});
-    j=await r.json();}
-   catch(err){lastErr=err;sp.textContent='Connection hiccup — retrying ('+(attempt+1)+'/3)…';await new Promise(res=>setTimeout(res,2500));}}
-  if(!j)throw lastErr||new Error('no response');
-  results=j.results||[];render();}
- catch(e){if(platform==='tiktok'){results=await checkTikwm(urls);render();
-   if(!results.some(r=>r.ok)&&!auto)alert('Could not check those TikTok links. '+e)}
-  else if(!auto)alert('Could not reach the server after 3 tries. Please check your internet connection, wait a few seconds, and try again.')}
- finally{sp.classList.remove('on');document.getElementById('checkBtn').disabled=false}}
+ if(checking){pendingRecheck=true;return}
+ checking=true;lastCheckedKey=platform+'|'+urls.join('|');
+ const sp=document.getElementById('spin');sp.classList.add('on');document.getElementById('checkBtn').disabled=true;
+ results=[];render();
+ try{for(let i=0;i<urls.length;i++){
+   sp.textContent='Checking link '+(i+1)+' of '+urls.length+'…';
+   const items=await checkOneItems(urls[i]);
+   results.push(...items);render();}}
+ finally{sp.classList.remove('on');document.getElementById('checkBtn').disabled=false;checking=false;
+  if(pendingRecheck){pendingRecheck=false;
+   const v=document.getElementById('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
+   if(v.length&&(platform+'|'+v.join('|'))!==lastCheckedKey)doCheck(true);}}}
 // Auto-check: as soon as links are pasted (or typing pauses), fetch the details.
 let checkTimer=null;
 document.getElementById('urls').addEventListener('input',()=>{clearTimeout(checkTimer);
