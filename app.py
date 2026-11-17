@@ -152,6 +152,31 @@ def download_ytdlp(url, dest_dir, quality="best", platform=""):
         info = ydl.extract_info(url, download=True)
         return ydl.prepare_filename(info).rsplit(".", 1)[0] + ".mp4" if os.path.exists(ydl.prepare_filename(info).rsplit(".",1)[0]+".mp4") else ydl.prepare_filename(info)
 
+@app.post("/api/file")
+def get_file():
+    """Download ONE video and return the file itself (not a ZIP), so the
+    page can download videos one by one and show real per-video progress
+    (total size / downloaded / speed) from the streamed response."""
+    body = request.get_json(force=True, silent=True) or {}
+    platform = (body.get("platform") or "").lower()
+    quality = body.get("quality") or "best"
+    nowm = body.get("nowatermark", True)
+    url = (body.get("url") or "").strip()
+    if not url:
+        return jsonify(ok=False, error="No URL given"), 400
+    tmp = tempfile.mkdtemp(prefix="file-")
+    try:
+        p = download_tiktok(url, tmp, nowm) if platform == "tiktok" else download_ytdlp(url, tmp, quality, platform)
+        name = os.path.basename(p)
+        @after_this_request
+        def cleanup(resp):
+            shutil.rmtree(tmp, ignore_errors=True)
+            return resp
+        return send_file(p, as_attachment=True, download_name=name, mimetype="video/mp4")
+    except Exception as e:
+        shutil.rmtree(tmp, ignore_errors=True)
+        return jsonify(ok=False, error=str(e)[:500]), 500
+
 @app.post("/api/zip")
 def make_zip():
     body = request.get_json(force=True, silent=True) or {}
