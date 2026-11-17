@@ -60,8 +60,9 @@ def check_ytdlp(url):
                         "duration": e.get("duration"), "id": str(e.get("id") or "")})
         if out: return out
     thumb = info.get("thumbnail") or ""
+    heights = sorted({f.get("height") for f in (info.get("formats") or []) if f.get("height")}, reverse=True)
     return [{"url": url, "ok": True, "title": info.get("title") or "", "thumbnail": thumb,
-             "duration": info.get("duration"), "id": str(info.get("id") or "")}]
+             "duration": info.get("duration"), "id": str(info.get("id") or ""), "heights": heights}]
 
 @app.get("/")
 def index():
@@ -93,7 +94,8 @@ def check():
 
 def download_tiktok(url, dest_dir, nowatermark=True):
     d = tikwm(url)
-    play = (d.get("play") if nowatermark else d.get("wmplay")) or d.get("hdplay") or d.get("play")
+    # No-watermark: prefer the HD stream (hdplay) over the standard play URL.
+    play = ((d.get("hdplay") or d.get("play")) if nowatermark else (d.get("wmplay") or d.get("play"))) or d.get("play")
     if not play: raise Exception("tikwm returned no play URL")
     if play.startswith("/"): play = "https://www.tikwm.com" + play
     name = safe_name(d.get("title"), f"tiktok-{d.get('id','video')}") + ".mp4"
@@ -104,11 +106,17 @@ def download_tiktok(url, dest_dir, nowatermark=True):
             for chunk in r.iter_content(8192): f.write(chunk)
     return path
 
-def download_ytdlp(url, dest_dir, quality="720"):
+def download_ytdlp(url, dest_dir, quality="best", platform=""):
+    # Default is "best": the highest quality the platform offers, i.e. the video
+    # as uploaded. A numeric quality only CAPS the height; it never forces lower
+    # when "best" is chosen. (Before 2026-11-17 the default cap was 720p, which
+    # silently downgraded Facebook downloads.)
+    q = str(quality or "best").lower()
     fmt = {"best": "bestvideo+bestaudio/best",
-           "1080": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-           "720": "bestvideo[height<=720]+bestaudio/best[height<=720]"}.get(str(quality), "bestvideo[height<=720]+bestaudio/best[height<=720]")
-    opts = ydl_opts({"format": fmt, "merge_output_format": "mp4",
+           "1080": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+           "720": "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+           "480": "bestvideo[height<=480]+bestaudio/best[height<=480]/best"}.get(q, "bestvideo+bestaudio/best")
+    opts = ydl_opts({"format": fmt, "format_sort": ["res", "fps", "br"], "merge_output_format": "mp4",
                      "outtmpl": os.path.join(dest_dir, "%(title).80s [%(id)s].%(ext)s")})
     with yt_dlp.YoutubeDL(opts) as ydl:
         info = ydl.extract_info(url, download=True)
@@ -118,7 +126,7 @@ def download_ytdlp(url, dest_dir, quality="720"):
 def make_zip():
     body = request.get_json(force=True, silent=True) or {}
     platform = (body.get("platform") or "").lower()
-    quality = body.get("quality") or "720"
+    quality = body.get("quality") or "best"
     nowm = body.get("nowatermark", True)
     items = body.get("items") or []
     tmp = tempfile.mkdtemp(prefix="dl-")
@@ -128,7 +136,7 @@ def make_zip():
             url, title = it.get("url"), it.get("title") or ""
             sub = os.path.join(tmp, str(i)); os.makedirs(sub)
             try:
-                p = download_tiktok(url, sub, nowm) if platform == "tiktok" else download_ytdlp(url, sub, quality)
+                p = download_tiktok(url, sub, nowm) if platform == "tiktok" else download_ytdlp(url, sub, quality, platform)
                 for root, _, files in os.walk(sub):
                     for fn in files: got.append(os.path.join(root, fn))
                 if not any(sub in g for g in got): raise Exception("download produced no file")

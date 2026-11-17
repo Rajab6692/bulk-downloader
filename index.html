@@ -31,8 +31,8 @@ label.chk{font-size:14px}
 <div class="panel" id="panel">
 <button class="back" onclick="goHome()">← All platforms</button>
 <h2 id="pTitle" style="margin:0 0 10px"></h2>
-<div class="row" id="ytOpts" style="display:none"><label>Quality:</label>
-<select id="quality"><option value="best">Best</option><option value="1080">1080p</option><option value="720" selected>720p</option></select></div>
+<div class="row" id="qOpts" style="display:none"><label>Quality:</label>
+<select id="quality"><option value="best" selected>Best available (original)</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select></div>
 <div class="row" id="ttOpts" style="display:none"><label class="chk"><input type="checkbox" id="nowm" checked> No watermark</label></div>
 <textarea id="urls" placeholder="Paste links, one per line"></textarea>
 <div class="row"><button class="btn" id="checkBtn" onclick="doCheck()">✓ Check Links</button>
@@ -50,13 +50,15 @@ label.chk{font-size:14px}
 </div>
 <script>
 let platform='',results=[];
-const base=()=> (document.getElementById('apiBase').value||'').replace(/\/$/,'');
+const DEFAULT_BACKEND='https://bulk-downloader-qb4c.onrender.com';
+const base=()=>{const v=(document.getElementById('apiBase').value||'').replace(/\/$/,'');if(v)return v;
+ return location.hostname.endsWith('pages.dev')?DEFAULT_BACKEND:''};
 const apiBaseEl=document.getElementById('apiBase');apiBaseEl.value=localStorage.getItem('apiBase')||'';
 apiBaseEl.onchange=()=>localStorage.setItem('apiBase',apiBaseEl.value.trim());
 const NAMES={youtube:'YouTube',tiktok:'TikTok',facebook:'Facebook'};
 function openP(p){platform=p;document.getElementById('home').style.display='none';
  document.getElementById('panel').classList.add('open');document.getElementById('pTitle').textContent=NAMES[p];
- document.getElementById('ytOpts').style.display=p==='youtube'?'flex':'none';
+ document.getElementById('qOpts').style.display=(p==='youtube'||p==='facebook')?'flex':'none';
  document.getElementById('ttOpts').style.display=p==='tiktok'?'flex':'none';
  document.getElementById('urls').placeholder=p==='tiktok'?'Paste TikTok video links (or one @profile link), one per line':'Paste links, one per line';
  results=[];render();}
@@ -64,7 +66,7 @@ function goHome(){document.getElementById('home').style.display='grid';document.
 function fmt(s){if(!s&&s!==0)return'';s=Math.round(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 function render(){const el=document.getElementById('list');el.innerHTML=results.map((r,i)=>
  `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="">`:'<img alt="">'}
-  <div class="t"><b>${(r.title||'Untitled').replace(/</g,'&lt;')}</b><br><small>${fmt(r.duration)} ${r.ok?'':'<span class="err">'+(r.error||'Failed').replace(/</g,'&lt;')+'</span>'}</small></div>
+  <div class="t"><b>${(r.title||'Untitled').replace(/</g,'&lt;')}</b><br><small>${fmt(r.duration)}${r.heights&&r.heights.length?' · Available: '+r.heights.map(h=>h+'p').join(', '):''} ${r.ok?'':'<span class="err">'+(r.error||'Failed').replace(/</g,'&lt;')+'</span>'}</small></div>
   ${r.ok?`<input type="checkbox" class="pick" data-i="${i}" checked>`:''}</div>`).join('');
  document.getElementById('dlRow').style.display=results.some(r=>r.ok)?'flex':'none';}
 function toggleAll(v){document.querySelectorAll('.pick').forEach(c=>c.checked=v)}
