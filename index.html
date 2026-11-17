@@ -2,131 +2,104 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bulk Video Downloader — YouTube · TikTok · Facebook</title>
 <style>
-*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#0f1115;color:#f2f3f5}
-.wrap{max-width:720px;margin:0 auto;padding:20px 16px 48px}h1{font-size:22px;text-align:center;margin:8px 0 4px}
+*{box-sizing:border-box}body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;margin:0;background:#0b0e13;color:#f2f3f5}
+.wrap{max-width:720px;margin:0 auto;padding:22px 16px 56px}
+h1{font-size:24px;text-align:center;margin:6px 0 4px;letter-spacing:.2px}
 .sub{text-align:center;color:#9aa3af;font-size:14px;margin:0 0 22px}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.card{border:none;border-radius:18px;padding:26px 8px 20px;color:#fff;cursor:pointer;text-align:center;transition:.15s;width:100%}
-.card:hover{transform:translateY(-3px)}.card .ic{font-size:44px;line-height:1}.card .nm{font-weight:700;font-size:17px;margin-top:10px}.card .ds{font-size:12px;opacity:.85;margin-top:4px}
-.yt{background:#e62117}.tt{background:#161616;border:1px solid #333}.fb{background:#1877f2}
-.panel{display:none;background:#171a21;border:1px solid #262b36;border-radius:16px;padding:18px;margin-top:20px}
-.panel.open{display:block}.back{background:none;border:none;color:#8ab4ff;cursor:pointer;font-size:14px;padding:0;margin-bottom:10px}
-textarea{width:100%;min-height:110px;border-radius:10px;border:1px solid #333a47;background:#0f1115;color:#fff;padding:10px;font-size:14px}
-select{padding:9px;border-radius:8px;background:#0f1115;color:#fff;border:1px solid #333a47}
-.btn{background:#2f81f7;color:#fff;border:none;border-radius:10px;padding:12px 18px;font-weight:700;cursor:pointer;font-size:15px}
-.btn.green{background:#238636}.btn:disabled{opacity:.5}.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
-.item{display:flex;gap:12px;align-items:center;background:#0f1115;border:1px solid #262b36;border-radius:12px;padding:10px;margin:8px 0}
-.item img{width:64px;height:84px;object-fit:cover;border-radius:8px;background:#222}.item .t{flex:1;font-size:14px}.err{color:#ff7b72;font-size:13px}
-.spin{display:none;color:#f0b429;font-weight:600}.spin.on{display:block}
-.settings{margin-top:28px;font-size:13px;color:#9aa3af}.settings input{width:100%;padding:8px;border-radius:8px;border:1px solid #333a47;background:#0f1115;color:#fff;margin-top:6px}
-label.chk{font-size:14px}
-.card.fetch{grid-column:1/-1;background:#333d52;padding:20px 8px 16px}
-input.txt{width:100%;padding:11px;border-radius:10px;border:1px solid #333a47;background:#0f1115;color:#fff;font-size:14px}
-.flink{font-size:12px;color:#8ab4ff;word-break:break-all}
-.fitem{background:#0f1115;border:1px solid #262b36;border-radius:10px;padding:8px 10px;margin:6px 0;font-size:13px}
+.card{border:none;border-radius:20px;padding:28px 8px 22px;color:#fff;cursor:pointer;text-align:center;transition:.15s;width:100%;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.card:hover{transform:translateY(-3px)}.card:active{transform:scale(.98)}
+.card .ic{font-size:42px;line-height:1;font-weight:800}.card .nm{font-weight:700;font-size:17px;margin-top:10px}.card .ds{font-size:12px;opacity:.88;margin-top:4px}
+.yt{background:linear-gradient(160deg,#ff2e1f,#c40f04)}.tt{background:linear-gradient(160deg,#232323,#000);border:1px solid #3a3a3a}.fb{background:linear-gradient(160deg,#2b8bff,#155bb5)}
+.panel{display:none;background:#141922;border:1px solid #232a38;border-radius:18px;padding:18px;margin-top:20px;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.panel.open{display:block}
+.back{background:none;border:none;color:#8ab4ff;cursor:pointer;font-size:14px;padding:0;margin-bottom:10px}
+textarea{width:100%;min-height:110px;border-radius:12px;border:1px solid #2b3342;background:#0b0e13;color:#fff;padding:12px;font-size:14px;resize:vertical}
+textarea:focus{outline:2px solid #2f81f7;border-color:transparent}
+select{padding:9px 10px;border-radius:9px;background:#0b0e13;color:#fff;border:1px solid #2b3342;font-size:14px}
+.btn{background:#2f81f7;color:#fff;border:none;border-radius:11px;padding:12px 18px;font-weight:700;cursor:pointer;font-size:15px}
+.btn.green{background:#238636}.btn.ghost{background:#1d2531;border:1px solid #2b3342}
+.btn:disabled{opacity:.5}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.hint{font-size:12px;color:#9aa3af;width:100%;line-height:1.5}
+.item{display:flex;gap:12px;align-items:center;background:#0b0e13;border:1px solid #232a38;border-radius:14px;padding:10px;margin:8px 0}
+.item img{width:64px;height:84px;object-fit:cover;border-radius:9px;background:#1a1f29;flex:none}
+.item .t{flex:1;font-size:14px;min-width:0}.item .t b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.bd{font-size:11px;font-weight:600;padding:2px 9px;border-radius:999px;background:#232a38;color:#c9d1d9}
+.bd.ok{background:#12351c;color:#3fb950}.bd.bad{background:#3d1a1a;color:#ff7b72}.bd.q{background:#1c2f4a;color:#8ab4ff}
+.err{color:#ff7b72;font-size:12px;display:block;margin-top:4px}
+.spin{display:none;color:#f0b429;font-weight:600;font-size:14px}.spin.on{display:block}
+.pick{width:22px;height:22px;accent-color:#238636;flex:none;cursor:pointer}
+#dlRow{position:sticky;bottom:0;background:#141922;padding:12px 0 4px;border-top:1px solid #232a38;z-index:5}
+label{font-size:14px}label.chk{font-size:14px;display:flex;gap:6px;align-items:center}
 </style></head><body><div class="wrap">
-<h1>📥 Bulk Video Downloader</h1><p class="sub">Pick a platform, paste links, download all in one ZIP. Free.</p>
+<h1>📥 Bulk Video Downloader</h1><p class="sub">Pick a platform, paste links — details load automatically — download all in batches. Free, maximum quality.</p>
 <div class="grid" id="home">
-<button class="card yt" onclick="openP('youtube')"><div class="ic">▶️</div><div class="nm">YouTube</div><div class="ds">Videos · Shorts · Playlists</div></button>
-<button class="card tt" onclick="openP('tiktok')"><div class="ic">♪</div><div class="nm">TikTok</div><div class="ds">No watermark</div></button>
+<button class="card yt" onclick="openP('youtube')"><div class="ic">▶</div><div class="nm">YouTube</div><div class="ds">Videos · Shorts · Playlists</div></button>
+<button class="card tt" onclick="openP('tiktok')"><div class="ic">♪</div><div class="nm">TikTok</div><div class="ds">No watermark · HD</div></button>
 <button class="card fb" onclick="openP('facebook')"><div class="ic">f</div><div class="nm">Facebook</div><div class="ds">Videos · Reels</div></button>
-<button class="card fetch" onclick="openFetch()"><div class="ic">🔗</div><div class="nm">Step 1 · Fetch All Links</div><div class="ds">Paste a channel / page / profile link — get every video link, then continue to download</div></button>
-</div>
-
-<div class="panel" id="fetchPanel">
-<button class="back" onclick="goHome()">← All platforms</button>
-<h2 style="margin:0 0 10px">Step 1 — Fetch all video links</h2>
-<div class="row"><label>Platform:</label>
-<select id="fPlatform"><option value="youtube">YouTube channel / playlist</option><option value="tiktok">TikTok profile</option><option value="facebook">Facebook page</option></select></div>
-<input class="txt" id="fUrl" placeholder="Paste the channel / page / profile link here">
-<div class="row"><button class="btn" id="fetchBtn" onclick="doFetch()">🔗 Fetch Links</button>
-<span class="spin" id="fSpin">Fetching… this can take a moment for big channels</span></div>
-<div id="fNote" style="font-size:13px;color:#9aa3af"></div>
-<div id="fList"></div>
-<div class="row" id="fActions" style="display:none">
-<button class="btn" onclick="copyFetched()">📋 Copy All Links</button>
-<button class="btn green" onclick="continueToDownload()">Continue to Download →</button></div>
 </div>
 
 <div class="panel" id="panel">
 <button class="back" onclick="goHome()">← All platforms</button>
 <h2 id="pTitle" style="margin:0 0 10px"></h2>
 <div class="row" id="qOpts" style="display:none"><label>Quality:</label>
-<select id="quality"><option value="best" selected>Best available (original)</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select></div>
-<div class="row" id="ttOpts" style="display:none"><label class="chk"><input type="checkbox" id="nowm" checked> No watermark</label></div>
-<textarea id="urls" placeholder="Paste links, one per line"></textarea>
-<div class="row"><button class="btn" id="checkBtn" onclick="doCheck()">✓ Check Links</button>
+<select id="quality"><option value="best" selected>Best available (original)</option><option value="1080">1080p</option><option value="720">720p</option><option value="480">480p</option></select>
+<span class="hint" style="width:auto">Best = the video exactly as uploaded. Lower options only make the file smaller.</span></div>
+<div class="row" id="ttOpts" style="display:none"><label class="chk"><input type="checkbox" id="nowm" checked> No watermark (HD)</label></div>
+<textarea id="urls" placeholder="Paste links here — one per line. Details will load automatically."></textarea>
+<div class="row"><button class="btn ghost" id="checkBtn" onclick="doCheck(false)">✓ Check Links</button>
 <span class="spin" id="spin">Working… please wait</span></div>
 <div id="list"></div>
 <div class="row" id="dlRow" style="display:none">
 <label class="chk"><input type="checkbox" id="selAll" checked onchange="toggleAll(this.checked)"> Select all</label>
-<label>Batch size:</label><select id="batchSize"><option value="5">5</option><option value="10" selected>10</option><option value="20">20</option></select>
+<label>Batch size:</label><select id="batchSize"><option value="3">3</option><option value="5" selected>5</option><option value="10">10</option></select>
 <button class="btn green" onclick="doZip(false)">⬇ Download Selected</button>
-<button class="btn green" onclick="doZip(true)">⬇⬇ Download All as ZIP</button>
-<div style="font-size:12px;color:#9aa3af;width:100%">Large lists download in batches (Batch 1, Batch 2, …) one after another, so the free server never gets overloaded and nothing fails. Keep this page open until all batches finish.</div></div>
-</div>
-
-<div class="settings">Backend URL (leave blank if the tool is hosted together):
-<input id="apiBase" placeholder="e.g. https://your-backend.onrender.com">
+<button class="btn green" onclick="doZip(true)">⬇⬇ Download All</button>
+<div class="hint">Downloads run in batches (Batch 1, Batch 2, …) so the free server never overloads. For long full-HD videos, batch size 5 is the safest. Keep this page open until all batches finish.</div></div>
 </div>
 </div>
 <script>
 let platform='',results=[];
+// The page connects to the backend by itself — no settings needed.
 const DEFAULT_BACKEND='https://bulk-downloader-qb4c.onrender.com';
-const base=()=>{const v=(document.getElementById('apiBase').value||'').replace(/\/$/,'');if(v)return v;
- return location.hostname.endsWith('pages.dev')?DEFAULT_BACKEND:''};
-const apiBaseEl=document.getElementById('apiBase');apiBaseEl.value=localStorage.getItem('apiBase')||'';
-apiBaseEl.onchange=()=>localStorage.setItem('apiBase',apiBaseEl.value.trim());
+const base=()=>location.hostname.endsWith('pages.dev')?DEFAULT_BACKEND:'';
 const NAMES={youtube:'YouTube',tiktok:'TikTok',facebook:'Facebook'};
 function openP(p){platform=p;document.getElementById('home').style.display='none';
- document.getElementById('fetchPanel').classList.remove('open');
- document.getElementById('panel').classList.add('open');document.getElementById('pTitle').textContent=NAMES[p]+' — Step 2 · Download';
+ document.getElementById('panel').classList.add('open');document.getElementById('pTitle').textContent=NAMES[p]+' Downloader';
  document.getElementById('qOpts').style.display=(p==='youtube'||p==='facebook')?'flex':'none';
  document.getElementById('ttOpts').style.display=p==='tiktok'?'flex':'none';
- document.getElementById('urls').placeholder=p==='tiktok'?'Paste TikTok video links (or one @profile link), one per line':'Paste links, one per line';
+ document.getElementById('urls').placeholder=p==='tiktok'?'Paste TikTok video links (or one @profile link) — details load automatically':'Paste links here — one per line. Details will load automatically.';
  results=[];render();}
-function goHome(){document.getElementById('home').style.display='grid';document.getElementById('panel').classList.remove('open');document.getElementById('fetchPanel').classList.remove('open')}
-let fetched=[];
-function openFetch(){document.getElementById('home').style.display='none';document.getElementById('panel').classList.remove('open');document.getElementById('fetchPanel').classList.add('open')}
-async function doFetch(){const url=document.getElementById('fUrl').value.trim();
- if(!url)return alert('Paste a channel / page / profile link first');
- const fp=document.getElementById('fPlatform').value;
- const sp=document.getElementById('fSpin');sp.classList.add('on');document.getElementById('fetchBtn').disabled=true;
- document.getElementById('fNote').textContent='';document.getElementById('fList').innerHTML='';document.getElementById('fActions').style.display='none';fetched=[];
- try{const r=await fetch(base()+'/api/fetch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform:fp,url})});
-  const j=await r.json();
-  if(!j.ok)throw new Error(j.error||'Fetch failed');
-  fetched=j.links||[];
-  if(!fetched.length)throw new Error('No video links found at that address. Check the link, or paste the video links directly in the download section.');
-  document.getElementById('fNote').textContent='Found '+fetched.length+' video link(s). '+(j.note||'');
-  document.getElementById('fList').innerHTML=fetched.map((f,i)=>`<div class="fitem"><b>${i+1}.</b> ${(f.title||'Video').replace(/</g,'&lt;')}<br><span class="flink">${f.url}</span></div>`).join('');
-  document.getElementById('fActions').style.display='flex';}
- catch(e){alert('Fetch failed: '+e.message)}
- finally{sp.classList.remove('on');document.getElementById('fetchBtn').disabled=false}}
-async function copyFetched(){if(!fetched.length)return;
- const txt=fetched.map(f=>f.url).join('\n');
- try{await navigator.clipboard.writeText(txt);alert('Copied '+fetched.length+' links. You can paste them anywhere — or just press Continue.')}
- catch(_){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();alert('Copied '+fetched.length+' links.')}}
-function continueToDownload(){if(!fetched.length)return;
- const fp=document.getElementById('fPlatform').value;
- openP(fp);document.getElementById('urls').value=fetched.map(f=>f.url).join('\n');
- window.scrollTo({top:0,behavior:'smooth'})}
+function goHome(){document.getElementById('home').style.display='grid';document.getElementById('panel').classList.remove('open')}
 function fmt(s){if(!s&&s!==0)return'';s=Math.round(s);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
-function render(){const el=document.getElementById('list');el.innerHTML=results.map((r,i)=>
- `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="">`:'<img alt="">'}
-  <div class="t"><b>${(r.title||'Untitled').replace(/</g,'&lt;')}</b><br><small>${fmt(r.duration)}${r.heights&&r.heights.length?' · Available: '+r.heights.map(h=>h+'p').join(', '):''} ${r.ok?'':'<span class="err">'+(r.error||'Failed').replace(/</g,'&lt;')+'</span>'}</small></div>
-  ${r.ok?`<input type="checkbox" class="pick" data-i="${i}" checked>`:''}</div>`).join('');
+function render(){const el=document.getElementById('list');el.innerHTML=results.map((r,i)=>{
+ const badges=[];
+ if(r.duration)badges.push('<span class="bd">⏱ '+fmt(r.duration)+'</span>');
+ if(r.ok&&r.heights&&r.heights.length)badges.push('<span class="bd q">'+Math.max(...r.heights)+'p available</span>');
+ if(r.ok)badges.push('<span class="bd ok">✓ Ready</span>');else badges.push('<span class="bd bad">Failed</span>');
+ return `<div class="item">${r.thumbnail?`<img src="${r.thumbnail}" alt="">`:'<img alt="">'}
+  <div class="t"><b>${(r.title||'Untitled').replace(/</g,'&lt;')}</b><div class="badges">${badges.join('')}</div>${r.ok?'':'<span class="err">'+(r.error||'Failed').replace(/</g,'&lt;')+'</span>'}</div>
+  ${r.ok?`<input type="checkbox" class="pick" data-i="${i}" checked>`:''}</div>`}).join('');
  document.getElementById('dlRow').style.display=results.some(r=>r.ok)?'flex':'none';}
 function toggleAll(v){document.querySelectorAll('.pick').forEach(c=>c.checked=v)}
-async function doCheck(){const urls=document.getElementById('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
- if(!urls.length)return alert('Paste at least one link');
- const sp=document.getElementById('spin');sp.classList.add('on');document.getElementById('checkBtn').disabled=true;
+let lastCheckedKey='';
+async function doCheck(auto){const urls=document.getElementById('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
+ if(!urls.length){if(!auto)alert('Paste at least one link');return}
+ lastCheckedKey=platform+'|'+urls.join('|');
+ const sp=document.getElementById('spin');sp.textContent='Checking links…';sp.classList.add('on');document.getElementById('checkBtn').disabled=true;
  try{const r=await fetch(base()+'/api/check',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({platform,urls})});
   const j=await r.json();results=j.results||[];render();}
  catch(e){if(platform==='tiktok'){results=await checkTikwm(urls);render();
-   if(!results.some(r=>r.ok))alert('Could not check those TikTok links. '+e)}
-  else alert('Could not reach the backend. Check the Backend URL below. '+e)}
+   if(!results.some(r=>r.ok)&&!auto)alert('Could not check those TikTok links. '+e)}
+  else if(!auto)alert('Could not reach the server. Wait a few seconds and try again. '+e)}
  finally{sp.classList.remove('on');document.getElementById('checkBtn').disabled=false}}
+// Auto-check: as soon as links are pasted (or typing pauses), fetch the details.
+let checkTimer=null;
+document.getElementById('urls').addEventListener('input',()=>{clearTimeout(checkTimer);
+ checkTimer=setTimeout(()=>{const v=document.getElementById('urls').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(v.length&&(platform+'|'+v.join('|'))!==lastCheckedKey)doCheck(true);},900);});
 async function checkTikwm(urls){const out=[];
  for(const u of urls){try{const r=await fetch('https://www.tikwm.com/api/?url='+encodeURIComponent(u)+'&hd=1');
   const j=await r.json();
@@ -142,7 +115,7 @@ async function doZip(all){let items;
  // Batching: never send the whole list at once. The free server comfortably
  // handles one batch at a time, so big lists complete batch by batch
  // (Batch 1 of 3, 2 of 3, ...) instead of failing as one huge request.
- const size=parseInt(document.getElementById('batchSize').value||'10',10);
+ const size=parseInt(document.getElementById('batchSize').value||'5',10);
  const batches=[];for(let i=0;i<items.length;i+=size)batches.push(items.slice(i,i+size));
  const saveBlob=(blob,name)=>{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),4000)};
  try{for(let b=0;b<batches.length;b++){
@@ -162,7 +135,7 @@ async function doZip(all){let items;
    let n=0;for(const it of items){const r=results.find(x=>x.url===it.url);const src=document.getElementById('nowm').checked?(r.play||r.wmplay):(r.wmplay||r.play);if(!src)continue;
     try{const rr=await fetch(src);if(!rr.ok)throw 0;const bb=await rr.blob();const a=document.createElement('a');a.href=URL.createObjectURL(bb);a.download=(it.title||'tiktok').replace(/[^\w -]/g,'').slice(0,60)+'.mp4';a.click();n++}
     catch(_){window.open(src,'_blank');n++}}
-   alert('Backend not connected, so the '+n+' TikTok video(s) were sent as direct downloads instead of one ZIP. For ZIP downloads, connect the free backend (Backend URL below).')}
-  else alert('Download failed: '+(e.message==='Failed to fetch'?'the connection dropped or the free server took too long — big videos (5+ minutes, full HD) can take several minutes to prepare. Wait a moment and try again, or download fewer videos at a time.':e.message))}
+   alert('Server not connected, so the '+n+' TikTok video(s) were sent as direct downloads instead of ZIP batches.')}
+  else alert('Download failed: '+(e.message==='Failed to fetch'?'the connection dropped or the free server took too long — big videos can take several minutes per batch. Wait a moment and try again, or use a smaller batch size.':e.message))}
  finally{sp.classList.remove('on');sp.textContent='Working… please wait'}}
 </script></body></html>
