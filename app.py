@@ -176,7 +176,10 @@ def make_zip():
             with open(os.path.join(tmp, "_FAILED.txt"), "w") as f:
                 f.write("These items failed:\n" + "\n".join(failed))
         zpath = os.path.join(tempfile.gettempdir(), f"{platform or 'videos'}-download.zip")
-        with zipfile.ZipFile(zpath, "w", zipfile.ZIP_DEFLATED) as z:
+        # STORED, not DEFLATED: MP4s are already compressed, so deflating only
+        # burns minutes of the free tier's tiny CPU and makes phones time out
+        # with "Failed to fetch" on large videos (user hit this 2026-11-17).
+        with zipfile.ZipFile(zpath, "w", zipfile.ZIP_STORED) as z:
             seen = {}
             for p in got:
                 arc = os.path.basename(p)

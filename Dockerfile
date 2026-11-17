@@ -7,4 +7,4 @@ COPY app.py ./app.py
 COPY index.html ./index.html
 ENV PORT=5000 YTDLP_NOCHECKCERT=1
 EXPOSE 5000
-CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 600 app:app"]
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:$PORT --timeout 900 --worker-class gthread --threads 8 app:app"]

@@ -146,6 +146,6 @@ async function doZip(all){let items;
     try{const rr=await fetch(src);if(!rr.ok)throw 0;const bb=await rr.blob();const a=document.createElement('a');a.href=URL.createObjectURL(bb);a.download=(it.title||'tiktok').replace(/[^\w -]/g,'').slice(0,60)+'.mp4';a.click();n++}
     catch(_){window.open(src,'_blank');n++}}
    alert('Backend not connected, so the '+n+' TikTok video(s) were sent as direct downloads instead of one ZIP. For ZIP downloads, connect the free backend (Backend URL below).')}
-  else alert('Download failed: '+e.message)}
+  else alert('Download failed: '+(e.message==='Failed to fetch'?'the connection dropped or the free server took too long — big videos (5+ minutes, full HD) can take several minutes to prepare. Wait a moment and try again, or download fewer videos at a time.':e.message))}
  finally{sp.classList.remove('on');sp.textContent='Working… please wait'}}
 </script></body></html>
